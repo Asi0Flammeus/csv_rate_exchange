@@ -4,6 +4,8 @@ import pandas as pd
 from datetime import datetime, timedelta, date
 import argparse
 import sys
+import os
+from pathlib import Path
 
 AVAILABLE_CURRENCIES: Dict[str, Tuple[str, str]] = {
     "1": ("USD", "US Dollar"),
@@ -18,6 +20,12 @@ AVAILABLE_CURRENCIES: Dict[str, Tuple[str, str]] = {
     "10": ("SEK", "Swedish Krona"),
     "11": ("BTC", "Bitcoin")
 }
+
+def ensure_output_dir() -> str:
+    """Creates and returns the path to the output directory."""
+    output_dir = Path("exchange_rates_data")
+    output_dir.mkdir(exist_ok=True)
+    return str(output_dir)
 
 def fill_missing_dates(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
     """Fill missing dates with interpolated values."""
@@ -123,6 +131,9 @@ def main() -> None:
     args = parser.parse_args()
     base_currency = "EUR"
     
+    # Ensure output directory exists
+    output_dir = ensure_output_dir()
+    
     if len(sys.argv) == 1:
         quote_currency = select_currency()
         start_date, end_date = select_timeframe()
@@ -137,7 +148,12 @@ def main() -> None:
     df = get_exchange_rate(base_currency, quote_currency, start_date, end_date)
     
     if df is not None:
-        output_filename = f"EUR_{quote_currency}_exchange_rate_{start_date}_to_{end_date}.csv"
+        # Create filename with full path
+        output_filename = os.path.join(
+            output_dir, 
+            f"EUR_{quote_currency}_exchange_rate_{start_date}_to_{end_date}.csv"
+        )
+        
         df.to_csv(output_filename, index=False, date_format='%Y-%m-%d')
         print(f"\nData exported successfully to {output_filename}")
         
