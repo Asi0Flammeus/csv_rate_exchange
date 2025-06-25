@@ -1,5 +1,7 @@
 from typing import Optional, Dict, Tuple, List
 import yfinance as yf
+print(yf.Ticker("BTC-USD").history(period="1d"))
+
 import pandas as pd
 from datetime import datetime, timedelta, date
 import argparse
